@@ -67,7 +67,8 @@ loadMoreButton.addEventListener('click', async () => {
     const { images } = await fetchImages(query, currentPage, imagesPerPage);
     toggleLoader(false);
 
-    if (currentPage * imagesPerPage >= totalHits) {
+    const totalDisplayed = currentPage * imagesPerPage;
+    if (images.length === 0 || totalDisplayed >= totalHits) {
       loadMoreButton.classList.add('hidden');
       iziToast.info({
         title: 'End of Results',
