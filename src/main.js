@@ -18,6 +18,7 @@ searchForm.addEventListener('submit', async event => {
   query = searchInput.value.trim();
 
   if (!query) {
+    clearGallery();
     iziToast.error({ title: 'Error', message: 'Please enter a search query!' });
     return;
   }
@@ -43,7 +44,9 @@ searchForm.addEventListener('submit', async event => {
       });
     } else {
       renderImages(images);
-      if (images.length < totalHits) {
+      if (images.length < imagesPerPage || totalHits <= imagesPerPage) {
+        loadMoreButton.classList.add('hidden');
+      } else {
         loadMoreButton.classList.remove('hidden');
       }
     }
@@ -64,7 +67,7 @@ loadMoreButton.addEventListener('click', async () => {
     const { images } = await fetchImages(query, currentPage, imagesPerPage);
     toggleLoader(false);
 
-    if (images.length === 0 || currentPage * imagesPerPage >= totalHits) {
+    if (currentPage * imagesPerPage >= totalHits) {
       loadMoreButton.classList.add('hidden');
       iziToast.info({
         title: 'End of Results',
@@ -81,7 +84,11 @@ loadMoreButton.addEventListener('click', async () => {
 });
 
 function toggleLoader(visible) {
-  loader.classList.toggle('hidden', !visible);
+  if (visible) {
+    loader.style.display = 'block';
+  } else {
+    loader.style.display = 'none';
+  }
 }
 
 function smoothScroll() {
