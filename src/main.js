@@ -35,7 +35,6 @@ searchForm.addEventListener('submit', async event => {
       imagesPerPage
     );
     totalHits = total;
-    toggleLoader(false);
 
     if (images.length === 0) {
       iziToast.warning({
@@ -44,18 +43,17 @@ searchForm.addEventListener('submit', async event => {
       });
     } else {
       renderImages(images);
-      if (images.length < imagesPerPage || totalHits <= imagesPerPage) {
-        loadMoreButton.classList.add('hidden');
-      } else {
+      if (images.length === imagesPerPage && totalHits > imagesPerPage) {
         loadMoreButton.classList.remove('hidden');
       }
     }
   } catch (error) {
-    toggleLoader(false);
     iziToast.error({
       title: 'Error',
       message: 'Something went wrong. Please try again!',
     });
+  } finally {
+    toggleLoader(false);
   }
 });
 
@@ -65,22 +63,25 @@ loadMoreButton.addEventListener('click', async () => {
 
   try {
     const { images } = await fetchImages(query, currentPage, imagesPerPage);
-    toggleLoader(false);
 
-    const totalDisplayed = currentPage * imagesPerPage;
-    if (images.length === 0 || totalDisplayed >= totalHits) {
+    renderImages(images);
+
+    if (
+      images.length < imagesPerPage ||
+      currentPage * imagesPerPage >= totalHits
+    ) {
       loadMoreButton.classList.add('hidden');
       iziToast.info({
         title: 'End of Results',
         message: "We're sorry, but you've reached the end of search results.",
       });
-    } else {
-      renderImages(images);
-      smoothScroll();
     }
+    smoothScroll();
   } catch (error) {
     toggleLoader(false);
     iziToast.error({ title: 'Error', message: 'Failed to load more images.' });
+  } finally {
+    toggleLoader(false);
   }
 });
 
